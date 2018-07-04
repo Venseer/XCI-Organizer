@@ -88,12 +88,8 @@ namespace XCI_Organizer {
             List<string> list = new List<string>();
 
             try {
-                foreach (string d in Directory.GetDirectories(folder)) {
-                    foreach (string f in Directory.GetFiles(d, "*.xci")) {
-                        list.Add(f);
-                    }
-
-                    GetXCIsInFolder(d);
+                foreach (string f in Directory.GetFiles(folder, "*.xci", SearchOption.AllDirectories)) {
+                    list.Add(f);
                 }
             } catch (System.Exception execpt) {
                 Console.WriteLine(execpt.Message);
@@ -145,6 +141,44 @@ namespace XCI_Organizer {
         public static bool checkFile(string filepath) {
             if (File.Exists(filepath)) {
                 return true;
+            }
+            return false;
+        }
+
+        public static bool RenameFile(string filepath, string newName)
+        {
+            if (checkFile(filepath))
+            {
+                string uncheckedName = newName;
+                List<char> invalidChars = new List<char>();
+                string _newName;
+                string newPath;
+
+                // Add characters to remove from filename here
+                invalidChars.AddRange(Path.GetInvalidFileNameChars());
+                invalidChars.Add('™');
+                invalidChars.Add('®');
+
+                _newName = string.Join("", uncheckedName.Split(invalidChars.ToArray()));
+                newPath = Path.GetDirectoryName(filepath) + "\\" + _newName;
+
+                if (!File.Exists(newPath))
+                {
+                    System.IO.File.Move(filepath, (newPath + ".xci"));
+                }
+                else
+                {
+                    int append = 1;
+
+                    while (File.Exists(newPath + "_" + append.ToString()))
+                    {
+                        append++;
+                    }
+
+                    newPath = newPath + "_" + append.ToString();
+
+                    System.IO.File.Move(filepath, (newPath + ".xci"));
+                }
             }
             return false;
         }
